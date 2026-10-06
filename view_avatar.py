@@ -98,6 +98,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    ThreadingHTTPServer.allow_reuse_address = True
     server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     print(f"Open http://127.0.0.1:{PORT}")
     print("Keep `python agent.py dev` running in another terminal.")

@@ -351,8 +351,9 @@
     function attachTrack(track, participant) {
       if (track.kind === Track.Kind.Video) {
         track.attach(videoEl);
-        videoEl.muted = false;
-        videoEl.volume = 1;
+        // Video-only element: muted helps browser autoplay; audio uses <audio>.
+        videoEl.muted = true;
+        videoEl.playsInline = true;
         videoEl.style.display = "block";
         placeholder.style.display = "none";
         livePill.classList.add("on");

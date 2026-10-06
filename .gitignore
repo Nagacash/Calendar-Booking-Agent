@@ -25,3 +25,8 @@ __pycache__/
 .agents/
 skills-lock.json
 *.log
+
+# Web / Vercel
+web/node_modules/
+web/dist/
+.vercel/

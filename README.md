@@ -1,10 +1,19 @@
 # Calendar Face
 
+<p align="center">
+  <img src="docs/readme-hero.jpg" alt="Calendar Face" width="920" />
+</p>
+
 A real-time AI avatar that reads (and can create/reschedule) Google Calendar events and holds you accountable.
 
 Built on [LiveKit Agents](https://docs.livekit.io/agents/) + [Synthesia Interactive Avatars](https://www.synthesia.io/features/avatars/interactive-avatars). Inspired by [this tutorial](https://youtu.be/xQoJA9_1EXA).
 
-**Powered by [Naga Codex](https://www.nagacodex.cloud/).**
+**Powered by [Naga Codex](https://www.nagacodex.cloud/).**  
+**Live viewer:** [web-seven-tawny-63.vercel.app](https://web-seven-tawny-63.vercel.app)
+
+<p align="center">
+  <img src="docs/readme-session.jpg" alt="Live session concept" width="720" />
+</p>
 
 ## Bring your own keys (BYOK)
 
@@ -67,15 +76,52 @@ See [`.env.example`](.env.example):
 - `LIVEKIT_URL` / `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` — required  
 - `LIVEKIT_AGENT_NAME` — must match the agent name used in LiveKit dispatch/Console  
 
+## Web viewer (Vercel + BYOK in the browser)
+
+<p align="center">
+  <img src="docs/readme-byok-ui.png" alt="BYOK keys screen on Vercel" width="720" />
+</p>
+
+<p align="center">
+  <img src="docs/readme-architecture.jpg" alt="BYOK architecture" width="720" />
+</p>
+
+The `web/` app stores **LiveKit URL / API key / secret / agent name** in the user’s browser via Zustand + `localStorage`. Tokens are minted client-side — nothing is sent to Naga Codex servers.
+
+Users still must run the Python agent locally (Synthesia + Google keys stay on their machine):
+
+```bash
+python agent.py dev
+```
+
+Then open the Vercel site → paste **their** LiveKit keys → Connect.
+
+**What the Vercel URL does / does not do**
+
+| Works on the URL alone? | Piece |
+|-------------------------|--------|
+| Yes | BYOK form, room join, token minting in-browser |
+| Only with local `agent.py` | Synthesia **face + voice**, calendar tools |
+| Needs 1 free Synthesia session | Interactive avatar video (close other Consoles/tabs) |
+
+```bash
+cd web && npm install && npm run build
+# deploy: cd web && npx vercel --prod
+```
+
+| Piece | Where keys live | Who pays |
+|-------|-----------------|----------|
+| Vercel viewer | User browser (LiveKit only) | User’s LiveKit project |
+| `agent.py` | User `.env` (LiveKit + Synthesia + Google) | User |
+
 ## Deploy options (still BYOK)
 
 | Option | Use when | Your keys exposed? |
 |--------|----------|--------------------|
 | **Local run** (above) | Friends, open-source users, demos on their machine | No |
-| **User deploys to their LiveKit Cloud** | They want it always-on | No — they use `lk agent` + their secrets |
-| **Your hosted multi-tenant SaaS** | Product with accounts + billing | Would use *your* keys unless you add per-user key vault + billing — don’t do this casually |
-
-Recommended for GitHub: ship the code + README; users clone and run with their own `.env`.
+| **Vercel viewer + local agent** | Share a UI URL; each user brings LiveKit keys | No |
+| **User deploys agent to their LiveKit Cloud** | They want the worker always-on | No |
+| **Your hosted multi-tenant SaaS** | Product with accounts + billing | Don’t do this casually |
 
 ## Security checklist before `git push`
 
