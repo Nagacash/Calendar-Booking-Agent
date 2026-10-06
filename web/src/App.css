@@ -161,6 +161,14 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   background: transparent;
   color: var(--gold-soft);
 }
+button.stop {
+  background: transparent;
+  border-color: #a84a3a;
+  color: #e8a090;
+}
+button.stop:hover:not(:disabled) {
+  background: rgba(168, 74, 58, 0.16);
+}
 
 .meta {
   display: flex;

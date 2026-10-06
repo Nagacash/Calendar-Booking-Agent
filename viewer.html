@@ -314,7 +314,10 @@
     </section>
 
     <footer class="controls">
-      <button id="connectBtn">Connect</button>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button id="connectBtn">Connect</button>
+        <button id="stopBtn" class="secondary" disabled>Stop</button>
+      </div>
       <div class="meta">
         <div id="status">Ready for one session</div>
         <a class="powered" href="https://www.nagacodex.cloud/" target="_blank" rel="noopener noreferrer">
@@ -329,6 +332,7 @@
 
     const statusEl = document.getElementById("status");
     const btn = document.getElementById("connectBtn");
+    const stopBtn = document.getElementById("stopBtn");
     const videoEl = document.getElementById("avatarVideo");
     const audioEl = document.getElementById("avatarAudio");
     const placeholder = document.getElementById("placeholder");
@@ -340,6 +344,30 @@
     function setStatus(msg) {
       statusEl.textContent = msg;
     }
+
+    function resetMedia() {
+      videoEl.srcObject = null;
+      videoEl.style.display = "none";
+      audioEl.srcObject = null;
+      placeholder.style.display = "grid";
+      livePill.classList.remove("on");
+      hasVideo = false;
+      hasAudio = false;
+    }
+
+    function stop() {
+      if (room) {
+        room.removeAllListeners();
+        room.disconnect();
+        room = null;
+      }
+      resetMedia();
+      btn.disabled = false;
+      stopBtn.disabled = true;
+      setStatus("Stopped — Connect again when ready");
+    }
+
+    stopBtn.addEventListener("click", stop);
 
     function updateStatus(identity) {
       const parts = [];
@@ -376,7 +404,9 @@
     }
 
     btn.addEventListener("click", async () => {
+      if (room) stop();
       btn.disabled = true;
+      stopBtn.disabled = false;
       setStatus("Opening the room…");
       try {
         const res = await fetch("/token");
@@ -392,6 +422,13 @@
           setStatus(`Joined: ${participant.identity}`);
           maybeAttachParticipant(participant);
         });
+        room.on(RoomEvent.Disconnected, () => {
+          room = null;
+          resetMedia();
+          btn.disabled = false;
+          stopBtn.disabled = true;
+          setStatus("Disconnected");
+        });
 
         await room.connect(url, token);
         await room.localParticipant.setMicrophoneEnabled(true);
@@ -404,6 +441,7 @@
         console.error(err);
         setStatus(`Error: ${err.message || err}`);
         btn.disabled = false;
+        stopBtn.disabled = true;
       }
     });
   </script>

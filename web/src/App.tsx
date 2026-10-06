@@ -77,11 +77,39 @@ export default function App() {
     }
   }
 
+  function resetMedia() {
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+      videoRef.current.style.display = "none";
+    }
+    if (audioRef.current) {
+      audioRef.current.srcObject = null;
+    }
+    if (placeholderRef.current) {
+      placeholderRef.current.style.display = "grid";
+    }
+    setLive(false);
+  }
+
+  function stop() {
+    const room = roomRef.current;
+    roomRef.current = null;
+    if (room) {
+      room.removeAllListeners();
+      room.disconnect();
+    }
+    resetMedia();
+    setBusy(false);
+    setStatus("Stopped — Connect again when ready");
+  }
+
   async function connect() {
     if (!keys.hasKeys()) {
       setEditing(true);
       return;
     }
+    // End any prior session before starting a new one.
+    if (roomRef.current) stop();
     setBusy(true);
     setStatus("Minting room token…");
     try {
@@ -104,6 +132,14 @@ export default function App() {
         setStatus(`Joined: ${participant.identity}`);
         for (const pub of participant.trackPublications.values()) {
           if (pub.track) attachTrack(pub.track, participant.identity);
+        }
+      });
+      room.on(RoomEvent.Disconnected, () => {
+        if (roomRef.current === room) {
+          roomRef.current = null;
+          resetMedia();
+          setBusy(false);
+          setStatus("Disconnected");
         }
       });
 
@@ -234,6 +270,14 @@ export default function App() {
           <button type="button" disabled={busy} onClick={() => void connect()}>
             Connect
           </button>
+          <button
+            type="button"
+            className="stop"
+            disabled={!busy && !live}
+            onClick={stop}
+          >
+            Stop
+          </button>
           <button type="button" className="secondary" onClick={() => setEditing(true)}>
             Keys
           </button>
@@ -241,6 +285,7 @@ export default function App() {
             type="button"
             className="secondary"
             onClick={() => {
+              stop();
               keys.clearKeys();
               setEditing(true);
               setStatus("Keys cleared");
